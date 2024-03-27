@@ -44,7 +44,7 @@ def mat_to_timeseries(f):
 
 
 
-def butter_lowpass_filter(data, cutoff_freq, sampling_rate, order=5, num_workers=-1):
+def butter_lowpass_filter(data, cutoff_freq, sampling_rate, order=5):
     """
     Applies a Butterworth lowpass filter to the input data.
 
@@ -53,7 +53,6 @@ def butter_lowpass_filter(data, cutoff_freq, sampling_rate, order=5, num_workers
         cutoff_freq (float): Cutoff frequency for the lowpass filter (in Hz).
         sampling_rate (float): Sampling rate of the input data (in Hz).
         order (int): Order of the Butterworth filter. Default is 5.
-        num_workers (int): Number of parallel workers. Default is -1, which uses all available CPU cores.
 
     Returns:
         numpy.ndarray: Filtered data.
@@ -64,15 +63,7 @@ def butter_lowpass_filter(data, cutoff_freq, sampling_rate, order=5, num_workers
     # Design Butterworth lowpass filter
     b, a = butter(order, normal_cutoff, btype='low', analog=False)
 
-    # Define function to apply filter to a single channel
-    def apply_filter_to_channel(channel):
-        return filtfilt(b, a, channel)
-
-    # Apply filter to each channel in parallel
-    filtered_data = Parallel(n_jobs=num_workers)(
-        delayed(apply_filter_to_channel)(channel) for channel in data)
-
-    return np.array(filtered_data)
+    return filtfilt(b, a, data)
 
 
 
