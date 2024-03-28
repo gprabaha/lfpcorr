@@ -12,7 +12,7 @@ import h5py
 import scipy
 from scipy.signal import butter, filtfilt
 from scipy.signal import get_window
-from scipy.fft import fft, rfftfreq
+from scipy.fft import rfft, rfftfreq
 import numpy as np
 from tqdm import tqdm
 from joblib import Parallel, delayed
@@ -86,7 +86,7 @@ def process_channel(channel_data, window, window_length):
         tuple: Tuple containing power spectrum and phase spectrum of the channel.
     """
     # Perform FFT on the channel data
-    fft_result = fft(channel_data * window)
+    fft_result = rfft(channel_data * window)
     # Compute power spectrum
     power_spectrum = np.abs(fft_result) ** 2
     # Compute phase spectrum
@@ -125,7 +125,7 @@ def windowed_fft_parallel(filtered_data, sampling_rate, window_duration=0.4, win
     timestamps = np.full((num_windows, 2), np.nan)
     
     # Iterate over windows
-    for idx, j in enumerate(tqdm(range(0, num_samples - window_length, int(sampling_rate * stride)), desc="Processing windows")):
+    for idx, j in enumerate(tqdm(range(0, num_samples - window_length, int(sampling_rate * stride)), desc="rFFT Window")):
         start_time = j / sampling_rate
         end_time = (j + window_length) / sampling_rate
         timestamps[idx] = (start_time, end_time)
@@ -135,12 +135,11 @@ def windowed_fft_parallel(filtered_data, sampling_rate, window_duration=0.4, win
             delayed(process_channel)(filtered_data[i, j:j + window_length], window, window_length)
             for i in range(num_channels)
         )
-    
         # Extract power and phase spectra from results
         for i, result in enumerate(results):
             power_spectrum = result[0]
             phase_spectrum = result[1]
-    
+            
             # Normalize spectra
             power_spectrum /= window_length
             phase_spectrum /= window_length
