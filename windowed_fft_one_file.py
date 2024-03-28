@@ -6,8 +6,9 @@ Created on Mon Mar 25 11:48:22 2024
 @author: prabaha
 """
 
-# from kymatio.numpy import Scattering1D
+# Importing necessary libraries
 import os
+import sys
 import h5py
 import scipy
 from scipy.signal import butter, filtfilt
@@ -18,8 +19,18 @@ from tqdm import tqdm
 from joblib import Parallel, delayed
 
 
+# Function to load MAT file
 def load_mat(file_path):
-    print("Loading mat...")
+    """
+    Load MAT file.
+
+    Parameters:
+        file_path (str): Path to the MAT file.
+
+    Returns:
+        h5py.File or dict: Loaded MAT file object.
+    """
+    print("Loading mat file...")
     try:
         f = h5py.File(file_path, 'r')
     except:
@@ -27,24 +38,57 @@ def load_mat(file_path):
     return f
 
 
-
+# Function to transpose data if necessary
 def maybe_transpose(ts):
+    """
+    Transpose data if necessary to ensure consistent shape.
+
+    Parameters:
+        ts (numpy.ndarray): Input data.
+
+    Returns:
+        numpy.ndarray: Transposed or original data.
+    """
     if ts.shape[0] > ts.shape[1]:
         return ts.T
     else:
         return ts
 
 
-
+# Convert MAT data to numpy array
 def mat_to_timeseries(f):
-    print("Converting ts to np array...")
+    """
+    Convert MAT data to numpy array.
+
+    Parameters:
+        f (h5py.File or dict): Loaded MAT file object.
+
+    Returns:
+        numpy.ndarray: Numpy array containing timeseries data.
+    """
+    print("Converting MAT data to numpy array...")
     timeseries = np.array(f['mat'])
     timeseries = timeseries.astype(float)
     return maybe_transpose(timeseries)
 
+
+# Apply filter on individual channel
 def apply_filter_on_channel(b, a, data):
+    """
+    Apply filter on individual channel.
+
+    Parameters:
+        b (numpy.ndarray): Numerator coefficients of the filter.
+        a (numpy.ndarray): Denominator coefficients of the filter.
+        data (numpy.ndarray): Input data.
+
+    Returns:
+        numpy.ndarray: Filtered data.
+    """
     return filtfilt(b, a, data)
 
+
+# Butterworth lowpass filter
 def butter_lowpass_filter(data, cutoff_freq, sampling_rate, order=5):
     """
     Applies a Butterworth lowpass filter to the input data.
@@ -64,6 +108,7 @@ def butter_lowpass_filter(data, cutoff_freq, sampling_rate, order=5):
     # Design Butterworth lowpass filter
     b, a = butter(order, normal_cutoff, btype='low', analog=False)
     num_channels = data.shape[0]
+    # Parallel computation of filtered data
     results = Parallel(n_jobs=-1)(
         delayed(apply_filter_on_channel)(b, a, data[i,])
         for i in range(num_channels)
@@ -72,7 +117,7 @@ def butter_lowpass_filter(data, cutoff_freq, sampling_rate, order=5):
     return np.array(results)
 
 
-
+# Process a single channel of data by performing FFT
 def process_channel(channel_data, window, window_length):
     """
     Process a single channel of data by performing FFT and computing power and phase spectra.
@@ -94,6 +139,7 @@ def process_channel(channel_data, window, window_length):
     return power_spectrum, phase_spectrum
 
 
+# Perform windowed FFT on filtered data in parallel
 def windowed_fft_parallel(filtered_data, sampling_rate, window_duration=0.4, window_type='kaiser', beta=14, stride=0.1, num_workers=-1):
     """
     Perform windowed FFT on the filtered data in parallel across channels.
@@ -115,11 +161,10 @@ def windowed_fft_parallel(filtered_data, sampling_rate, window_duration=0.4, win
     freqs = rfftfreq(window_length, 1 / sampling_rate)
     window = get_window((window_type, beta), window_length)
     
-    
     num_windows = len(range(0, num_samples - window_length, int(sampling_rate * stride)))
     num_frequency_bins = window_length // 2 + 1
     
-    # Initialize power_spectra, phase_spectra, and timestamps with NaNs
+    # Initialize arrays to store power and phase spectra
     power_spectra = np.full((num_windows, num_channels, num_frequency_bins), np.nan)
     phase_spectra = np.full((num_windows, num_channels, num_frequency_bins), np.nan)
     timestamps = np.full((num_windows, 2), np.nan)
@@ -154,61 +199,43 @@ def windowed_fft_parallel(filtered_data, sampling_rate, window_duration=0.4, win
     return freqs, power_spectra, phase_spectra, window_params, timestamps
 
 
-# Define paths and filenames
-data_path = "data"
-fname = "Kuro_Hitch_ACC_BLA_dmPFC_10012018-acc.mat"
-output_fname = "windowed_fft_results.npz"
+# Main function
+def main():
+    # Check if the correct number of command-line arguments is provided
+    if len(sys.argv) != 2:
+        print("Usage: python windowed_fft_one_file.py input_file_path")
+        return
+    # Set cutoff frequency and sampling rate
+    cutoff_freq = 1000  # Hz
+    sampling_rate = 4e4 # Hz
+    # Access the value of input_path (the first command-line argument)
+    input_file = sys.argv[1]
+    # Load MAT file and convert to numpy array
+    timeseries = mat_to_timeseries(load_mat(input_file))
+    # Apply Butterworth lowpass filter
+    timeseries_lowpass = butter_lowpass_filter(timeseries, cutoff_freq, sampling_rate)
+    
+    # Perform windowed FFT
+    freqs, power_spectra, phase_spectra, window_params, timestamps = windowed_fft_parallel(timeseries_lowpass, sampling_rate)
+    
+    # Define output directory
+    out_dir = "data/windowed_fft_kaiser"
+    if not os.path.exists(out_dir):
+        # If the directory doesn't exist, create it
+        os.makedirs(out_dir)
+    filename_without_extension = os.path.splitext(os.path.basename(input_file))[0]
+    output_fname = [filename_without_extension + '_windowed_fft_kaiser.npz']
+    
+    # Save results to NPZ file
+    output_path = os.path.join(out_dir, output_fname)
+    np.savez(output_path,
+             freqs=freqs,
+             power_spectra=power_spectra,
+             phase_spectra=phase_spectra,
+             window_params=window_params,
+             timestamps=timestamps)
+    print("Done")
 
-# Check if timeseries variable is already defined
-if 'timeseries' not in locals():
-    # Load data
-    file_path = os.path.join(data_path, fname)
-    timeseries = mat_to_timeseries(load_mat(file_path))
 
-# Filter data
-cutoff_freq = 1000  # Hz
-sampling_rate = 4e4
-timeseries_lowpass = butter_lowpass_filter(timeseries, cutoff_freq, sampling_rate)
-
-# Perform windowed FFT in parallel with progress bar
-freqs, power_spectra, phase_spectra, window_params, timestamps = windowed_fft_parallel(timeseries_lowpass, sampling_rate)
-
-# Save results to NPZ file
-output_path = os.path.join(data_path, output_fname)
-np.savez(output_path,
-         freqs=freqs,
-         power_spectra=power_spectra,
-         phase_spectra=phase_spectra,
-         window_params=window_params,
-         timestamps=timestamps)
-
-print("Done")
-
-# t_end = 2**20
-# x = timeseries[0,:t_end]
-
-# J = 8
-# T = t_end
-# Q = 16
-
-# scattering = Scattering1D(J, T, Q)
-
-# meta = scattering.meta()
-# order0 = np.where(meta['order'] == 0)
-# order1 = np.where(meta['order'] == 1)
-# order2 = np.where(meta['order'] == 2)
-
-# Sx = scattering(x)
-
-# plt.figure(figsize=(8, 8))
-# plt.subplot(3, 1, 1)
-# plt.plot(Sx[order0][0])
-# plt.title('Zeroth-order scattering')
-# plt.subplot(3, 1, 2)
-# plt.imshow(Sx[order1], aspect='auto')
-# plt.title('First-order scattering')
-# plt.subplot(3, 1, 3)
-# plt.imshow(Sx[order2], aspect='auto')
-# plt.title('Second-order scattering')
-# plt.tight_layout()
-# plt.show()
+if __name__ == "__main__":
+    main()
