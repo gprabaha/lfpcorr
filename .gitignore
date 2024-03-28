@@ -1,3 +1,5 @@
 *data*/
 *plot*/
 *.mat
+*.h5
+*.npz

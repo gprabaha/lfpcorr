@@ -42,7 +42,8 @@ def mat_to_timeseries(f):
     timeseries = timeseries.astype(float)
     return maybe_transpose(timeseries)
 
-
+def apply_filter_on_channel(b, a, data):
+    return filtfilt(b, a, data)
 
 def butter_lowpass_filter(data, cutoff_freq, sampling_rate, order=5):
     """
@@ -62,8 +63,13 @@ def butter_lowpass_filter(data, cutoff_freq, sampling_rate, order=5):
     normal_cutoff = cutoff_freq / nyquist_freq
     # Design Butterworth lowpass filter
     b, a = butter(order, normal_cutoff, btype='low', analog=False)
-
-    return filtfilt(b, a, data)
+    num_channels = data.shape[0]
+    results = Parallel(n_jobs=-1)(
+        delayed(apply_filter_on_channel)(b, a, data[i,])
+        for i in range(num_channels)
+    )
+    
+    return np.array(results)
 
 
 
@@ -107,7 +113,7 @@ def windowed_fft_parallel(filtered_data, sampling_rate, window_duration=0.4, win
     num_channels, num_samples = filtered_data.shape
     window_length = int(window_duration * sampling_rate)
     freqs = rfftfreq(window_length, 1 / sampling_rate)
-    window = get_window(window_type, window_length, beta=beta)
+    window = get_window((window_type, beta), window_length)
     power_spectra = []
     phase_spectra = []
     timestamps = []
@@ -173,6 +179,8 @@ np.savez(output_path,
          phase_spectra=phase_spectra,
          window_params=window_params,
          timestamps=timestamps)
+
+print("Done")
 
 # t_end = 2**20
 # x = timeseries[0,:t_end]
