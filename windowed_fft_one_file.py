@@ -224,7 +224,7 @@ def main():
         # If the directory doesn't exist, create it
         os.makedirs(out_dir)
     filename_without_extension = os.path.splitext(os.path.basename(input_file))[0]
-    output_fname = [filename_without_extension + '_windowed_fft_kaiser.npz']
+    output_fname = filename_without_extension + '_windowed_fft_kaiser.npz'
     
     # Save results to NPZ file
     output_path = os.path.join(out_dir, output_fname)
