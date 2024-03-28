@@ -114,42 +114,45 @@ def windowed_fft_parallel(filtered_data, sampling_rate, window_duration=0.4, win
     window_length = int(window_duration * sampling_rate)
     freqs = rfftfreq(window_length, 1 / sampling_rate)
     window = get_window((window_type, beta), window_length)
-    power_spectra = []
-    phase_spectra = []
-    timestamps = []
-
+    
+    
+    num_windows = len(range(0, num_samples - window_length, int(sampling_rate * stride)))
+    num_frequency_bins = window_length // 2 + 1
+    
+    # Initialize power_spectra, phase_spectra, and timestamps with NaNs
+    power_spectra = np.full((num_windows, num_channels, num_frequency_bins), np.nan)
+    phase_spectra = np.full((num_windows, num_channels, num_frequency_bins), np.nan)
+    timestamps = np.full((num_windows, 2), np.nan)
+    
     # Iterate over windows
-    for j in tqdm(range(0, num_samples - window_length, int(sampling_rate * stride)), desc="Processing windows"):
+    for idx, j in enumerate(tqdm(range(0, num_samples - window_length, int(sampling_rate * stride)), desc="Processing windows")):
         start_time = j / sampling_rate
         end_time = (j + window_length) / sampling_rate
-        timestamps.append((start_time, end_time))
-
+        timestamps[idx] = (start_time, end_time)
+    
         # Parallelize FFT computation across channels
         results = Parallel(n_jobs=num_workers)(
             delayed(process_channel)(filtered_data[i, j:j + window_length], window, window_length)
             for i in range(num_channels)
         )
-
+    
         # Extract power and phase spectra from results
-        power_spectrum = np.array([result[0] for result in results])
-        phase_spectrum = np.array([result[1] for result in results])
-
-        # Normalize spectra
-        power_spectrum /= window_length
-        phase_spectrum /= window_length
-
-        power_spectra.append(power_spectrum)
-        phase_spectra.append(phase_spectrum)
-
-    power_spectra = np.array(power_spectra)
-    phase_spectra = np.array(phase_spectra)
+        for i, result in enumerate(results):
+            power_spectrum = result[0]
+            phase_spectrum = result[1]
+    
+            # Normalize spectra
+            power_spectrum /= window_length
+            phase_spectrum /= window_length
+    
+            # Assign to pre-allocated arrays
+            power_spectra[idx, i] = power_spectrum
+            phase_spectra[idx, i] = phase_spectrum
 
     # Store window parameters
     window_params = {'window_type': window_type, 'duration': window_duration, 'beta': beta}
 
     return freqs, power_spectra, phase_spectra, window_params, timestamps
-
-
 
 
 # Define paths and filenames
