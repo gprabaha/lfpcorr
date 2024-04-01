@@ -1,0 +1,4 @@
+
+CondaError: Run 'conda init' before 'conda deactivate'
+
+slurmstepd: error: *** JOB 26394996 ON r812u15n02 CANCELLED AT 2024-04-01T11:20:42 ***

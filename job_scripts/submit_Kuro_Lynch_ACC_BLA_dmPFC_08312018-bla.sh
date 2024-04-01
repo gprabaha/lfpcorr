@@ -1,13 +1,13 @@
 #!/bin/bash
-#SBATCH --job-name=Kuro_Lynch_ACC_BLA_dmPFC_08312018-bla_rfft_32G
-#SPATCH --partition=psych_day
+#SBATCH --job-name=Kuro_Lynch_ACC_BLA_dmPFC_08312018-bla_rfft_week
+#SPATCH --partition=psych_week
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=4
-#SBATCH --mem-per-cpu=32G
-#SBATCH --time=1:00:00
-#SBATCH --output=job_scripts/rfft_32G_Kuro_Lynch_ACC_BLA_dmPFC_08312018-bla.out
-#SBATCH --error=job_scripts/rfft_32G_Kuro_Lynch_ACC_BLA_dmPFC_08312018-bla.err
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=128G
+#SBATCH --time=3:00:00
+#SBATCH --output=job_scripts/rfft_week_Kuro_Lynch_ACC_BLA_dmPFC_08312018-bla.out
+#SBATCH --error=job_scripts/rfft_week_Kuro_Lynch_ACC_BLA_dmPFC_08312018-bla.err
 
 # Load necessary modules
 module load miniconda

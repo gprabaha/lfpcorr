@@ -1,13 +1,13 @@
 #!/bin/bash
-#SBATCH --job-name=Lynch_Cronenberg_dmPFC_dmPFC_BLA_01092019-bla_rfft_32G
-#SPATCH --partition=psych_day
+#SBATCH --job-name=Lynch_Cronenberg_dmPFC_dmPFC_BLA_01092019-bla_rfft_week
+#SPATCH --partition=psych_week
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=4
-#SBATCH --mem-per-cpu=32G
-#SBATCH --time=1:00:00
-#SBATCH --output=job_scripts/rfft_32G_Lynch_Cronenberg_dmPFC_dmPFC_BLA_01092019-bla.out
-#SBATCH --error=job_scripts/rfft_32G_Lynch_Cronenberg_dmPFC_dmPFC_BLA_01092019-bla.err
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=128G
+#SBATCH --time=3:00:00
+#SBATCH --output=job_scripts/rfft_week_Lynch_Cronenberg_dmPFC_dmPFC_BLA_01092019-bla.out
+#SBATCH --error=job_scripts/rfft_week_Lynch_Cronenberg_dmPFC_dmPFC_BLA_01092019-bla.err
 
 # Load necessary modules
 module load miniconda

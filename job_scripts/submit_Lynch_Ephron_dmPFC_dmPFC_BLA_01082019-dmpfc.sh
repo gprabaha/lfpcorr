@@ -1,13 +1,13 @@
 #!/bin/bash
-#SBATCH --job-name=Lynch_Ephron_dmPFC_dmPFC_BLA_01082019-dmpfc_rfft_32G
-#SPATCH --partition=psych_day
+#SBATCH --job-name=Lynch_Ephron_dmPFC_dmPFC_BLA_01082019-dmpfc_rfft_week
+#SPATCH --partition=psych_week
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=4
-#SBATCH --mem-per-cpu=32G
-#SBATCH --time=1:00:00
-#SBATCH --output=job_scripts/rfft_32G_Lynch_Ephron_dmPFC_dmPFC_BLA_01082019-dmpfc.out
-#SBATCH --error=job_scripts/rfft_32G_Lynch_Ephron_dmPFC_dmPFC_BLA_01082019-dmpfc.err
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=128G
+#SBATCH --time=3:00:00
+#SBATCH --output=job_scripts/rfft_week_Lynch_Ephron_dmPFC_dmPFC_BLA_01082019-dmpfc.out
+#SBATCH --error=job_scripts/rfft_week_Lynch_Ephron_dmPFC_dmPFC_BLA_01082019-dmpfc.err
 
 # Load necessary modules
 module load miniconda
