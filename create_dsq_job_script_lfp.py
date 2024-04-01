@@ -30,6 +30,6 @@ with open(output_file, 'w') as f:
         f.write(job_line)
 
 command = "module load dSD; dsq --job-file " + output_file + " --partition psych_day --cpus-per-task 6 --mem 200G -t 2:00:00"
-command_split = shlex.split(command)
+command = shlex.split(command)
 print(command)
-subprocess.run(command_split)
+subprocess.run(command.split())
