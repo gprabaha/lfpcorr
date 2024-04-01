@@ -3,7 +3,7 @@
 #SPATCH --partition=psych_day
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=6
+#SBATCH --cpus-per-task=4
 #SBATCH --mem-per-cpu=32G
 #SBATCH --time=1:00:00
 #SBATCH --output=job_scripts/rfft_32G_{}.out
