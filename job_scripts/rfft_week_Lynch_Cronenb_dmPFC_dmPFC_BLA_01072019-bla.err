@@ -1,0 +1,16 @@
+
+CondaError: Run 'conda init' before 'conda deactivate'
+
+Traceback (most recent call last):
+  File "/gpfs/milgram/pi/chang/pg496/repositories/lfpcorr/windowed_fft_one_file.py", line 241, in <module>
+    main()
+  File "/gpfs/milgram/pi/chang/pg496/repositories/lfpcorr/windowed_fft_one_file.py", line 219, in main
+    freqs, power_spectra, phase_spectra, window_params, timestamps = windowed_fft_parallel(timeseries_lowpass, sampling_rate)
+                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/milgram/pi/chang/pg496/repositories/lfpcorr/windowed_fft_one_file.py", line 169, in windowed_fft_parallel
+    phase_spectra = np.full((num_windows, num_channels, num_frequency_bins), np.nan)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/milgram/project/chang/pg496/conda_envs/lfp_cluster/lib/python3.12/site-packages/numpy/core/numeric.py", line 329, in full
+    a = empty(shape, dtype, order)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+numpy.core._exceptions._ArrayMemoryError: Unable to allocate 60.9 GiB for an array with shape (63854, 16, 8001) and data type float64

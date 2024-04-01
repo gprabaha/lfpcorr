@@ -1,0 +1,1 @@
+4	0	r811u01n06.milgram.ycrc.yale.edu	2024-04-01 13:10:48	2024-04-01 13:11:32	44.83	module load miniconda; conda activate lfp_cluster; python extract_lfp_one_file.py /gpfs/milgram/project/chang/pg496/data_dir/social_gaze/social_gaze_raw_mat/Kuro_Ephron_ACCg_Stim_09122018-acc.mat
