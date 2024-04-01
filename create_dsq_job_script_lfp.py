@@ -9,6 +9,7 @@ Created on Mon Apr  1 12:02:25 2024
 
 import os
 import subprocess
+import shlex
 
 data_path = "/gpfs/milgram/project/chang/pg496/data_dir/social_gaze/social_gaze_raw_mat"
 
@@ -29,5 +30,6 @@ with open(output_file, 'w') as f:
         f.write(job_line)
 
 command = "module load dSD; dsq --job-file " + output_file + " --partition psych_day --cpus-per-task 6 --mem 200G -t 2:00:00"
+command = shlex.split(command)
 print(command)
-subprocess.run(command)
+subprocess.run(command.split())
