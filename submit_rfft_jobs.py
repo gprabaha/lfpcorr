@@ -9,7 +9,7 @@ Created on Thu Mar 28 15:08:13 2024
 import os
 import subprocess
 
-data_path = "/gpfs/milgram/project/chang/pg496/social_gaze_raw_mat"
+data_path = "/gpfs/milgram/project/chang/pg496/data_dir/social_gaze/social_gaze_raw_mat"
 
 all_files = os.listdir(data_path)
 mat_files_with_path = [os.path.join(data_path, file) for file in all_files if file.endswith('.mat')]

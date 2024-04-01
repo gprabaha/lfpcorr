@@ -1,0 +1,5 @@
+
+CondaError: Run 'conda init' before 'conda deactivate'
+
+/var/spool/slurmd/job26375939/slurm_script: line 17:  3404 Killed                  python windowed_fft_one_file.py /gpfs/milgram/project/chang/pg496/social_gaze_raw_mat/Lynch_Cronenberg_dmPFC_BLA_ACCg_01112019-bla.mat
+slurmstepd: error: Detected 1 oom_kill event in StepId=26375939.batch. Some of the step tasks have been OOM Killed.
