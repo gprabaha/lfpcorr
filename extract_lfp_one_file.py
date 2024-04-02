@@ -41,7 +41,7 @@ def main():
     
     # Save results to NPZ file
     output_path = os.path.join(out_dir, output_fname)
-    np.savez(output_path, lfp=timeseries_lowpass)
+    np.savez_compressed(output_path, lfp=timeseries_lowpass, compresslevel=6)
     print("Done")
 
 
