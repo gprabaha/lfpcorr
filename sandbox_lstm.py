@@ -10,7 +10,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 from keras.models import Sequential
-from keras.layers import LSTM, Dense, Reshape
+from keras.layers import Input, LSTM, Dense, Reshape
 from sklearn.preprocessing import StandardScaler
 
 from util import *
@@ -36,17 +36,29 @@ ex_file = load_mat(mat_files_with_path[0])
 
 m1_positions = ex_file['var']['m1'][0][0]
 m2_positions = ex_file['var']['m2'][0][0]
+m1_positions = m1_positions.astype(float)
+m2_positions = m2_positions.astype(float)
 m1_positions = m1_positions.reshape((m1_positions.shape[1], 2))
 m2_positions = m2_positions.reshape((m2_positions.shape[1], 2))
 
 
-non_nan_indices = np.where(~np.isnan(m2_positions[:, 0]))[0]
-# Extract corresponding columns from m1_positions
-m1_positions = m1_positions[non_nan_indices]
-m2_positions = m2_positions[non_nan_indices]
+# Find rows with NaNs in m2_positions
+nan_indices_m2 = np.isnan(m2_positions).any(axis=1)
+
+# Remove rows with NaNs from both m1_positions and m2_positions
+m1_positions = m1_positions[~nan_indices_m2]
+m2_positions = m2_positions[~nan_indices_m2]
+
+# Repeat the process by detecting NaNs in m1_positions
+nan_indices_m1 = np.isnan(m1_positions).any(axis=1)
+
+# Remove rows with NaNs from both m1_positions and m2_positions
+m1_positions = m1_positions[~nan_indices_m1]
+m2_positions = m2_positions[~nan_indices_m1]
 
 # Assuming 'X' is your feature matrix
 scaler = StandardScaler()
+
 m1_pos_scaled = scaler.fit_transform(m1_positions)
 m2_pos_scaled = scaler.fit_transform(m2_positions)
 
@@ -70,7 +82,8 @@ print("Testing sequences shape:", X_test_seq.shape)
 
 # Create the model
 model = Sequential([
-    LSTM(units=64, input_shape=(X_train_seq.shape[1], X_train_seq.shape[2]), return_sequences=True),
+    Input(shape=(X_train_seq.shape[1], X_train_seq.shape[2])),
+    LSTM(units=64, return_sequences=True),
     LSTM(units=64),
     Dense(units=y_train_seq.shape[1]*y_train_seq.shape[2]),  # Output layer
     Reshape(target_shape=(y_train_seq.shape[1], y_train_seq.shape[2]))
@@ -79,10 +92,8 @@ model = Sequential([
 # Compile the model
 model.compile(optimizer='adam', loss='mse')
 
-# Print model summary
-model.summary()
 
-n_epochs = 1000
+n_epochs = 10
 # Fit the model
 history = model.fit(X_train_seq, y_train_seq, epochs=n_epochs, batch_size=64, validation_split=0.2)
 
@@ -100,3 +111,5 @@ plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.legend()
 plt.show()
+
+model.save('data/test_lstm.keras')
