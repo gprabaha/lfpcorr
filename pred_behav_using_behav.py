@@ -100,7 +100,7 @@ for i, model, combination in zip(range(len(models)), models, combinations):
     plt.subplot(2, 2, i+1)
     plt.plot(model.history.history['loss'], label='Training Loss')
     plt.plot(model.history.history['val_loss'], label='Validation Loss')
-    plt.title(f"Model {combination[0]} to {combination[1]}")
+    plt.title(f"Model {combination[0]} to {combination[1]}: {file_name}")
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
