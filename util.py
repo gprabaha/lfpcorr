@@ -8,6 +8,7 @@ Created on Mon Apr  1 11:48:26 2024
 
 import h5py
 import scipy
+import os
 import numpy as np
 from scipy.signal import butter, filtfilt
 from scipy.signal import get_window
@@ -330,5 +331,32 @@ def train_model_parallel(strategy, model, X_train_seq, y_train_seq, n_epochs, ba
     history = fit_model(distributed_model, X_train_seq, y_train_seq, n_epochs, batch_size, validation_split)
     return distributed_model, history
 
+
+def file_sorting_key(filepath):
+    """
+    Generate sorting key for file paths based on session and run number.
+
+    Parameters:
+        filepath (str): The file path to extract session and run number from.
+
+    Returns:
+        tuple: A tuple containing session and run number, used for sorting.
+               Returns (None, None) if the file detail is not 'position'.
+    """
+    # Extract filename from the filepath
+    filename = os.path.basename(filepath)
+
+    # Split filename into parts based on underscores
+    session, detail, run = filename.split('_')
+
+    # Discard files if detail is not 'position'
+    if detail != 'position':
+        return None, None  # Return (None, None) to indicate this file should not be considered for sorting
+
+    # Extract the run number from the run part of the filename
+    run_number = int(run.split('.')[0])  # Assumes run part ends with '.mat' extension
+
+    # Return a tuple containing session and run number
+    return session, run_number
 
 
